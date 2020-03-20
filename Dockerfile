@@ -33,14 +33,15 @@ RUN ./autogen.sh --disable-nls --disable-man --without-audit --without-selinux -
 
 FROM alpine:3.8 AS base
 MAINTAINER Jessica Frazelle <jess@linux.com>
+ARG uid=1000
 RUN apk add --no-cache git
 COPY --from=img /usr/bin/img /usr/bin/img
 COPY --from=idmap /usr/bin/newuidmap /usr/bin/newuidmap
 COPY --from=idmap /usr/bin/newgidmap /usr/bin/newgidmap
 RUN chmod u+s /usr/bin/newuidmap /usr/bin/newgidmap \
-  && adduser -D -u 1000 user \
-  && mkdir -p /run/user/1000 \
-  && chown -R user /run/user/1000 /home/user \
+  && adduser -D -u {uid} user \
+  && mkdir -p "/run/user/{uid}" \
+  && chown -R user "/run/user/{uid}" /home/user \
   && echo user:100000:65536 | tee /etc/subuid | tee /etc/subgid
 # In previous version of `alpine:3.8`, the root was not locked and su-able
 # without any password when SUID bit is set on `/bin/su`.
